@@ -38,7 +38,7 @@ Welcome to the official MONEY MAKER channel.
 🌎 Online business resources
 🔔 Store updates
 
-👇 ENTER MONEY MAKER""",
+👇 ENTER MONEY MAKER"""
     ],
 
     "store": [
@@ -46,17 +46,17 @@ Welcome to the official MONEY MAKER channel.
 
 The current catalog is online.
 
-Explore the latest MONEY MAKER drops and digital resources.
+Browse the available MONEY MAKER products, workflows and digital resources.
 
-👇 OPEN THE STORE""",
+👇 EXPLORE THE CATALOG""",
 
         """⚡ MONEY MAKER ACCESS
 
-Browse the current catalog directly through the official store.
+Looking for your next resource?
 
-New drops and resources are available online.
+Browse the current MONEY MAKER catalog and see what's available now.
 
-👇 VIEW CATALOG""",
+👇 VIEW THE STORE"""
     ],
 
     "education": [
@@ -95,7 +95,7 @@ Manual work has limits.
 
 Systems can operate repeatedly.
 
-Build processes that keep working.""",
+Build processes that keep working."""
     ],
 
     "strategy": [
@@ -142,7 +142,7 @@ Measure.
 Compare.
 Improve.
 
-Data beats assumptions.""",
+Data beats assumptions."""
     ],
 
     "faq": [
@@ -154,7 +154,7 @@ The official MONEY MAKER catalog is available through the button below.
 
         """❓ NEED MORE INFORMATION?
 
-Product information is available directly through MONEY MAKER.
+Check the product information in the MONEY MAKER store.
 
 For additional questions, contact Telegram support.
 
@@ -168,7 +168,7 @@ MONEY MAKER support will never need your:
 • Private key
 • Account password
 
-Keep authentication credentials private.""",
+Keep authentication credentials private."""
     ],
 
     "support": [
@@ -178,7 +178,7 @@ Questions about a product?
 Need more information?
 Not sure where to start?
 
-Direct Telegram support is available.
+Contact MONEY MAKER directly through Telegram.
 
 👇 CONTACT SUPPORT""",
 
@@ -186,17 +186,17 @@ Direct Telegram support is available.
 
 Need information before making a decision?
 
-Contact MONEY MAKER directly through Telegram.
+Contact MONEY MAKER through Telegram.
 
-👇 TALK TO SUPPORT""",
+👇 TALK TO SUPPORT"""
     ],
 
     "cta": [
         """👀 EXPLORE MONEY MAKER
 
-Browse the current catalog whenever you're ready.
+Browse the current catalog and find the resource that fits what you're looking for.
 
-👇 SEE WHAT'S AVAILABLE""",
+👇 SEE THE CATALOG""",
 
         """💸 DON'T JUST SCROLL.
 
@@ -208,29 +208,44 @@ Decide.
 
         """⚡ YOUR NEXT MOVE STARTS HERE.
 
-Browse the current MONEY MAKER catalog.
+Explore the current MONEY MAKER catalog.
 
-👇 ENTER""",
+👇 ENTER THE STORE"""
     ],
 }
 
 
-def buttons(mode="both"):
+def product_url(product):
+    """
+    Product-aware store URL.
+
+    The website currently displays the catalog normally even when
+    ?product= is present, so this preserves the product identifier
+    without depending on it for navigation.
+    """
+    product_id = product.get("id")
+
+    if not product_id:
+        return STORE_URL
+
+    separator = "&" if "?" in STORE_URL else "?"
+    return f"{STORE_URL}{separator}product={product_id}"
+
+
+def buttons(mode="both", product=None):
+    store_url = product_url(product) if product else STORE_URL
+
+    store_label = "🛒 VIEW PRODUCT" if product else "🛒 VISIT STORE"
+
     store = InlineKeyboardButton(
-        "🛒 VISIT STORE",
-        url=STORE_URL
+        store_label,
+        url=store_url
     )
 
     support = InlineKeyboardButton(
         "💬 CONTACT SUPPORT",
         url=f"https://t.me/{SUPPORT}"
     )
-
-    if mode == "store":
-        return InlineKeyboardMarkup([
-            [store],
-            [support],
-        ])
 
     if mode == "support":
         return InlineKeyboardMarkup([
@@ -249,18 +264,45 @@ def find_product(name):
         if product["name"].upper() == name.upper():
             return product
 
-    raise RuntimeError(
-        f"Product not found: {name}"
+    raise RuntimeError(f"Product not found: {name}")
+
+
+def commercial_product_text(product):
+    name = product["name"]
+    price = product["price"]
+    description = product.get("description", "").strip()
+
+    if not description:
+        description = product.get("blurb", "").strip()
+
+    if description:
+        return (
+            f"⚡ MONEY MAKER DROP\n\n"
+            f"🔥 {name}\n"
+            f"💵 ${price}\n\n"
+            f"{description}\n\n"
+            f"🌎 Worldwide access\n"
+            f"💬 Telegram support\n\n"
+            f"👇 VIEW PRODUCT"
+        )
+
+    return (
+        f"⚡ MONEY MAKER DROP\n\n"
+        f"🔥 {name}\n"
+        f"💵 ${price}\n\n"
+        f"🌎 Worldwide access\n"
+        f"💬 Telegram support\n\n"
+        f"👇 VIEW PRODUCT"
     )
 
 
-async def publish_text(text, mode="both"):
+async def publish_text(text, mode="both", product=None):
     bot = Bot(token=TOKEN)
 
     sent = await bot.send_message(
         chat_id=CHANNEL,
         text=text,
-        reply_markup=buttons(mode),
+        reply_markup=buttons(mode, product),
         disable_web_page_preview=True,
     )
 
@@ -269,25 +311,18 @@ async def publish_text(text, mode="both"):
 
 async def send_post(category):
     if category not in POSTS:
-        raise RuntimeError(
-            f"Unknown category: {category}"
-        )
+        raise RuntimeError(f"Unknown category: {category}")
 
     text = random.choice(POSTS[category])
 
     if category in ("store", "cta"):
         mode = "store"
-
     elif category == "support":
         mode = "support"
-
     else:
         mode = "both"
 
-    sent = await publish_text(
-        text,
-        mode
-    )
+    sent = await publish_text(text, mode)
 
     print(
         f"[{datetime.now():%Y-%m-%d %H:%M:%S}] "
@@ -301,11 +336,12 @@ async def send_product(product=None):
     if product is None:
         product = random_product()
 
-    text = telegram_product_text(product)
+    text = commercial_product_text(product)
 
     sent = await publish_text(
         text,
-        "store"
+        "store",
+        product
     )
 
     print(
@@ -318,29 +354,11 @@ async def send_product(product=None):
 
 
 async def send_cashapp_daily():
-    """
-    Fixed daily product.
-
-    This command is called by GitHub Actions
-    once per day at 12:30 America/New_York.
-    """
-
-    product = find_product(
-        "CASHAPP TRANSFER SAUCE"
-    )
-
+    product = find_product("CASHAPP TRANSFER SAUCE")
     await send_product(product)
 
 
 async def send_evening():
-    """
-    Evening commercial slot.
-
-    Uses the approved weighted catalog.
-    CASHAPP TRANSFER SAUCE is excluded here
-    because it already has its fixed daily slot.
-    """
-
     products = [
         p for p in get_products()
         if p.get("auto_publish", False)
@@ -385,9 +403,7 @@ async def test():
         for items in POSTS.values()
     )
 
-    cashapp = find_product(
-        "CASHAPP TRANSFER SAUCE"
-    )
+    cashapp = find_product("CASHAPP TRANSFER SAUCE")
 
     print("=" * 60)
     print(" MONEY MAKER — US CONTENT ENGINE")
@@ -430,40 +446,28 @@ async def main():
 
     if command == "test":
         await test()
-
     elif command == "welcome":
         await send_post("welcome")
-
     elif command == "store":
         await send_post("store")
-
     elif command == "education":
         await send_post("education")
-
     elif command == "strategy":
         await send_post("strategy")
-
     elif command == "faq":
         await send_post("faq")
-
     elif command == "support":
         await send_post("support")
-
     elif command == "cta":
         await send_post("cta")
-
     elif command == "product":
         await send_product()
-
     elif command == "cashapp_daily":
         await send_cashapp_daily()
-
     elif command == "evening":
         await send_evening()
-
     elif command == "night":
         await send_night()
-
     else:
         print()
         print("UNKNOWN COMMAND")
