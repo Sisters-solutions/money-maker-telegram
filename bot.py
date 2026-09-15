@@ -7,6 +7,16 @@ from datetime import datetime
 from dotenv import load_dotenv
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 
+from catalog import (
+    random_product,
+    telegram_product_text,
+    product_count,
+)
+
+# ============================================================
+# MONEY MAKER — TELEGRAM CONTENT ENGINE
+# ============================================================
+
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -15,20 +25,14 @@ SUPPORT = os.getenv("SUPPORT_USERNAME")
 STORE_URL = os.getenv("STORE_URL")
 
 if not all([TOKEN, CHANNEL, SUPPORT, STORE_URL]):
-    raise RuntimeError("Missing required environment variables.")
+    raise RuntimeError("Missing variables in .env")
 
 
 # ============================================================
-# MONEY MAKER — CONTENT ENGINE
-# Market: United States
-# Language: English
+# CONTENT LIBRARY
 # ============================================================
 
-CONTENT = {
-
-    # --------------------------------------------------------
-    # WELCOME
-    # --------------------------------------------------------
+POSTS = {
 
     "welcome": [
 
@@ -36,115 +40,83 @@ CONTENT = {
 
 Welcome to the official MONEY MAKER channel.
 
-Here you'll find:
-
-⚡ New digital drops
-📦 Catalog updates
-🧠 Useful strategies
-🔍 Product spotlights
-💬 Direct support
+⚡ Digital opportunities
+📦 Product drops
+🧠 Strategies
+🌎 Online business resources
+🔔 Store updates
 
 Stay connected.
 
+👇 ENTER MONEY MAKER""",
+
+        """🌍 WELCOME TO MONEY MAKER
+
+One store.
+One channel.
+New opportunities and resources.
+
+Follow the channel for catalog updates, product spotlights and new releases.
+
 👇 EXPLORE MONEY MAKER""",
-
-        """🌎 WELCOME TO MONEY MAKER
-
-Built for people who move fast.
-
-New releases.
-Digital resources.
-Store updates.
-Practical information.
-
-Everything starts here.
-
-👇 ENTER THE STORE""",
-
-        """⚡ MONEY MAKER IS LIVE
-
-This channel connects you directly to the MONEY MAKER ecosystem.
-
-📦 Browse the catalog
-🔔 Follow new releases
-🧠 Learn something useful
-💬 Contact support directly
-
-👇 START HERE"""
     ],
 
-
-    # --------------------------------------------------------
-    # STORE
-    # --------------------------------------------------------
 
     "store": [
 
-        """🟢 STORE IS LIVE
+        """🟢 MONEY MAKER STORE
 
-The MONEY MAKER catalog is online.
+The catalog is online.
 
-Browse the current selection and explore what's available.
+Browse the current selection directly through the official MONEY MAKER store.
 
 👇 OPEN THE STORE""",
 
-        """💰 LOOKING FOR YOUR NEXT DIGITAL RESOURCE?
+        """💰 EXPLORE MONEY MAKER
 
-The MONEY MAKER catalog is available 24/7.
-
-Browse the current selection directly through the official store.
+Browse the current MONEY MAKER catalog and discover what's available.
 
 👇 VIEW CATALOG""",
 
-        """🌎 MONEY MAKER MARKETPLACE
+        """⚡ STORE ACCESS
 
-One place.
-Multiple digital resources.
-Direct access to the complete catalog.
+MONEY MAKER is available online.
 
-See what's currently available.
+Explore the current catalog from anywhere.
 
-👇 BROWSE THE STORE""",
-
-        """📦 CATALOG CHECK
-
-Have you checked the latest MONEY MAKER selection?
-
-The store is open and accessible worldwide.
-
-👇 EXPLORE THE CATALOG""",
-
-        """⚡ DON'T WASTE TIME SEARCHING
-
-We've organized the MONEY MAKER catalog in one place.
-
-Browse.
-Compare.
-Choose what fits your needs.
-
-👇 ENTER STORE""",
-
-        """💻 DIGITAL CATALOG ONLINE
-
-MONEY MAKER gives you direct access to the current product selection.
-
-No endless searching.
-
-👇 SEE WHAT'S AVAILABLE""",
-
-        """🔎 WHAT'S INSIDE MONEY MAKER?
-
-The fastest way to find out is simple:
-
-Open the catalog and explore it yourself.
-
-👇 VIEW THE STORE"""
+👇 ENTER THE STORE""",
     ],
 
 
-    # --------------------------------------------------------
-    # EDUCATION
-    # --------------------------------------------------------
+    "support": [
+
+        """💬 NEED HELP?
+
+Direct Telegram support is available.
+
+Questions about a product?
+Need more information?
+Not sure where to start?
+
+👇 CONTACT SUPPORT""",
+
+        """⚡ DIRECT SUPPORT
+
+Need information before making a decision?
+
+Contact MONEY MAKER directly through Telegram.
+
+👇 TALK TO SUPPORT""",
+
+        """💬 MONEY MAKER SUPPORT
+
+Questions about the catalog or how the store works?
+
+Speak directly with support.
+
+👇 OPEN SUPPORT""",
+    ],
+
 
     "education": [
 
@@ -153,7 +125,7 @@ Open the catalog and explore it yourself.
 Information without execution produces nothing.
 
 Research.
-Decide.
+Understand.
 Execute.
 Measure.
 Improve.
@@ -162,273 +134,157 @@ Then repeat.""",
 
         """⚡ SPEED MATTERS
 
-Research forever and nothing happens.
+Most people spend too much time searching and not enough time executing.
 
-A better system:
-
-1. Find the opportunity
-2. Understand it
-3. Test it
-4. Measure the result
-5. Improve
-
-Execution creates information.""",
+Research → Decide → Execute → Measure.""",
 
         """🌎 THINK GLOBAL
 
-The internet doesn't care where you live.
+The internet doesn't operate inside borders.
 
-Markets are global.
-Customers are global.
-Information is global.
+Products can be digital.
+Customers can be global.
+Distribution can be instant.
 
-Your thinking should be too.""",
+Build accordingly.""",
 
-        """🧠 BUILD SYSTEMS, NOT CHAOS
+        """🧠 EXECUTION > INFORMATION
 
-A repeatable process beats random effort.
+Knowing something has little value until it becomes action.
 
-Find what works.
-Document it.
-Improve it.
-Repeat it.""",
-
-        """📊 DATA > GUESSING
-
-Don't assume something works.
-
-Measure it.
-
-Clicks.
-Conversion.
-Cost.
-Time.
-Result.
-
-Good decisions start with real information.""",
-
-        """⚡ EXECUTION RULE
-
-You don't need 100 ideas.
-
-You need one useful idea executed properly.
-
-Focus creates speed.""",
-
-        """🔍 OPPORTUNITY IS OFTEN HIDDEN IN INFORMATION
-
-Two people can look at the same market and see completely different things.
-
-The difference?
-
-Research.
-Timing.
-Execution.""",
-
-        """💡 SMALL TESTS. FAST FEEDBACK.
-
-Before committing heavily to an idea:
-
+Learn.
 Test.
-Observe.
-Adjust.
+Measure.
+Improve.""",
 
-Fast feedback can save enormous amounts of time.""",
+        """⚡ BUILD SYSTEMS
 
-        """📈 THE COMPOUND EFFECT
+Manual work has limits.
 
-One improvement doesn't look important.
+Systems can operate repeatedly.
 
-But improving something repeatedly changes the entire result.
+The goal isn't simply to work harder.
 
-Better research.
-Better execution.
-Better conversion.
-Better systems.""",
+Build processes that keep working.""",
 
-        """🧠 DON'T CONFUSE ACTIVITY WITH PROGRESS
+        """🌍 ONLINE BUSINESS PRINCIPLE
 
-Being busy isn't the goal.
+Distribution matters.
 
-Ask one question:
+A great product nobody sees produces nothing.
 
-Did today's work move the objective forward?""",
-
-        """🌎 THE INTERNET RUNS 24/7
-
-Your systems don't always need to depend on your physical presence.
-
-Automation can handle repetitive work while you focus on decisions.""",
-
-        """⚙️ AUTOMATE THE REPETITIVE
-
-If you're doing the exact same task repeatedly, ask:
-
-Can this become a system?
-
-Automation creates leverage when the underlying process is useful."""
+Product + Distribution + Execution.""",
     ],
 
-
-    # --------------------------------------------------------
-    # STRATEGY
-    # --------------------------------------------------------
 
     "strategy": [
 
-        """🎯 SIMPLE BUSINESS FILTER
+        """📈 MONEY MAKER STRATEGY
 
-Before spending time on an opportunity, ask:
+Don't depend on one source of traffic.
 
-Is there demand?
-Can I reach the customer?
-Can it scale?
-Can the process be repeated?
+Build multiple distribution channels.
 
-Simple questions eliminate bad ideas quickly.""",
+Telegram.
+Short-form content.
+Search.
+Communities.
+Direct traffic.
 
-        """📊 TRACK THE FUNNEL
+Attention is an asset.""",
 
-Attention → Click → Visit → Decision → Conversion
+        """🧠 BUSINESS SYSTEM
 
-If results are weak, identify where people are dropping.
+TRAFFIC
+↓
+OFFER
+↓
+CONVERSION
+↓
+DELIVERY
+↓
+RETENTION
 
-Fix the bottleneck instead of guessing.""",
+Improve every stage.""",
 
-        """⚡ REMOVE FRICTION
+        """⚡ AUTOMATION
 
-Every unnecessary step reduces conversion.
+Every repetitive task should eventually become a system.
 
-Make the path clear:
+Content.
+Distribution.
+Analytics.
+Customer support.
+Operations.
 
-Discover → Understand → Decide → Act.""",
+Automation creates leverage.""",
 
-        """🧠 ATTENTION IS ONLY STEP ONE
+        """📊 TEST EVERYTHING
 
-Traffic without a clear destination doesn't accomplish much.
+Don't guess what works.
 
-Every piece of content should have a purpose.""",
+Publish.
+Measure.
+Compare.
+Improve.
 
-        """📈 OPTIMIZE WHAT ALREADY WORKS
+Data beats assumptions.""",
 
-Finding something that works is only the beginning.
+        """🌎 DISTRIBUTION
 
-Then ask:
+The internet gives businesses access to a global audience.
 
-Can it be faster?
-Can it be clearer?
-Can it reach more people?
-Can it convert better?"""
+The challenge isn't access.
+
+The challenge is earning attention.""",
     ],
 
 
-    # --------------------------------------------------------
-    # FAQ
-    # --------------------------------------------------------
-
     "faq": [
 
-        """❓ WHERE CAN I SEE THE MONEY MAKER CATALOG?
+        """❓ MONEY MAKER FAQ
 
-The complete current selection is available through the official store.
+WHERE IS THE STORE?
+
+The official MONEY MAKER catalog is available through the button below.
 
 👇 OPEN STORE""",
 
         """❓ NEED MORE INFORMATION?
 
-If you're unsure which option fits what you're looking for, contact support directly.
+Each product has its own description inside MONEY MAKER.
 
-👇 TALK TO SUPPORT""",
-
-        """❓ IS THE STORE AVAILABLE 24/7?
-
-Yes.
-
-The MONEY MAKER website can be accessed online at any time.
-
-👇 VISIT STORE""",
-
-        """❓ WHERE DO I GET MONEY MAKER UPDATES?
-
-Right here.
-
-Stay subscribed to the official channel for new releases, information and catalog updates.""",
-
-        """❓ HAVE A QUESTION BEFORE MAKING A DECISION?
-
-Ask first.
-
-Direct MONEY MAKER support is available through Telegram.
-
-👇 CONTACT SUPPORT"""
-    ],
-
-
-    # --------------------------------------------------------
-    # SUPPORT
-    # --------------------------------------------------------
-
-    "support": [
-
-        """💬 NEED HELP?
-
-Have a question about the catalog?
-
-Contact MONEY MAKER support directly.
-
-👇 TALK TO SUPPORT""",
-
-        """⚡ DIRECT SUPPORT
-
-Don't waste time guessing.
-
-If you need more information, contact us directly through Telegram.
+For additional questions, direct Telegram support is available.
 
 👇 CONTACT SUPPORT""",
 
-        """💬 QUESTIONS?
+        """🔐 SECURITY REMINDER
 
-We're here.
+MONEY MAKER support will never need your:
 
-For information about MONEY MAKER products or the store, use the direct support channel below.
+• Seed phrase
+• Private key
+• Account password
 
-👇 MESSAGE SUPPORT""",
+Keep authentication credentials private.""",
 
-        """🧠 NOT SURE WHERE TO START?
+        """❓ HOW DO I CONTACT MONEY MAKER?
 
-Browse the catalog first.
+Direct support is available through Telegram.
 
-If you still have questions, contact MONEY MAKER directly.
+Use the button below.
 
-👇 GET SUPPORT""",
-
-        """📩 MONEY MAKER SUPPORT
-
-Need clarification before making a decision?
-
-Use our direct Telegram contact.
-
-👇 SPEAK WITH SUPPORT"""
+👇 CONTACT SUPPORT""",
     ],
 
-
-    # --------------------------------------------------------
-    # CTA
-    # --------------------------------------------------------
 
     "cta": [
 
         """👀 STILL WATCHING?
 
-Take a look at the MONEY MAKER catalog.
+Explore the MONEY MAKER catalog whenever you're ready.
 
 👇 SEE WHAT'S AVAILABLE""",
-
-        """⚡ YOUR NEXT MOVE STARTS WITH INFORMATION.
-
-Explore the current MONEY MAKER selection.
-
-👇 OPEN THE STORE""",
 
         """💸 DON'T JUST SCROLL.
 
@@ -438,35 +294,25 @@ Decide.
 
 👇 MONEY MAKER STORE""",
 
-        """🔎 SEE IT FOR YOURSELF
+        """⚡ YOUR NEXT MOVE STARTS HERE.
 
-The current MONEY MAKER catalog is one click away.
+Browse the current MONEY MAKER catalog.
 
-👇 VIEW CATALOG""",
+👇 ENTER""",
 
-        """🌎 READY TO EXPLORE?
+        """🌎 MONEY MAKER
 
-Enter MONEY MAKER and browse the current selection.
+The store is online.
 
-👇 VISIT STORE""",
+Explore the current catalog.
 
-        """⚡ ONE CLICK.
-
-That's all it takes to see the complete MONEY MAKER catalog.
-
-👇 ENTER STORE""",
-
-        """📦 WHAT'S AVAILABLE RIGHT NOW?
-
-Check the official MONEY MAKER store.
-
-👇 BROWSE NOW"""
-    ]
+👇 OPEN STORE""",
+    ],
 }
 
 
 # ============================================================
-# BUTTON SYSTEM
+# BUTTONS
 # ============================================================
 
 def buttons(mode="both"):
@@ -481,69 +327,58 @@ def buttons(mode="both"):
         url=f"https://t.me/{SUPPORT}"
     )
 
+    channel = InlineKeyboardButton(
+        "📢 MONEY MAKER CHANNEL",
+        url="https://t.me/MoneyMakerWorldwide"
+    )
+
     if mode == "store":
         return InlineKeyboardMarkup([
             [store],
-            [support]
+            [support],
         ])
 
     if mode == "support":
         return InlineKeyboardMarkup([
             [support],
-            [store]
+            [store],
         ])
 
     return InlineKeyboardMarkup([
         [store],
-        [support]
+        [support],
+        [channel],
     ])
 
 
 # ============================================================
-# CHOOSE BUTTON TYPE
-# ============================================================
-
-def keyboard_for(category):
-
-    if category in (
-        "store",
-        "cta"
-    ):
-        return buttons("store")
-
-    if category in (
-        "support",
-        "faq"
-    ):
-        return buttons("support")
-
-    return buttons("both")
-
-
-# ============================================================
-# PUBLISH
+# SEND STANDARD POST
 # ============================================================
 
 async def send_post(category):
 
-    if category not in CONTENT:
-        raise ValueError(
-            f"Unknown content category: {category}"
-        )
+    if category not in POSTS:
+        print(f"Unknown category: {category}")
+        return
 
     bot = Bot(token=TOKEN)
 
-    text = random.choice(
-        CONTENT[category]
-    )
+    text = random.choice(POSTS[category])
 
-    keyboard = keyboard_for(category)
+    if category in ("store", "cta"):
+        keyboard = buttons("store")
+
+    elif category == "support":
+        keyboard = buttons("support")
+
+    else:
+        keyboard = buttons("both")
 
     sent = await bot.send_message(
         chat_id=CHANNEL,
         text=text,
         reply_markup=keyboard,
-        disable_web_page_preview=True
+        disable_web_page_preview=True,
     )
 
     print(
@@ -555,60 +390,88 @@ async def send_post(category):
 
 
 # ============================================================
-# RANDOM ENGINE
+# PRODUCT SPOTLIGHT
+# ============================================================
+
+async def send_product():
+
+    product = random_product()
+
+    text = telegram_product_text(product)
+
+    bot = Bot(token=TOKEN)
+
+    sent = await bot.send_message(
+        chat_id=CHANNEL,
+        text=text,
+        reply_markup=buttons("store"),
+        disable_web_page_preview=True,
+    )
+
+    print(
+        f"[{datetime.now():%Y-%m-%d %H:%M:%S}] "
+        f"PRODUCT POSTED | "
+        f"{product['name']} | "
+        f"${product['price']} | "
+        f"message_id={sent.message_id}"
+    )
+
+
+# ============================================================
+# ROTATING CONTENT
 # ============================================================
 
 async def send_random():
 
-    # Weighted distribution.
-    # Store/CTA remain commercially important,
-    # but the channel isn't just constant advertising.
-
     categories = [
         "education",
-        "education",
-        "strategy",
         "strategy",
         "faq",
         "store",
+        "support",
         "cta",
-        "support"
+        "product",
     ]
 
     category = random.choice(categories)
 
-    await send_post(category)
+    if category == "product":
+        await send_product()
+    else:
+        await send_post(category)
 
 
 # ============================================================
 # SYSTEM TEST
 # ============================================================
 
-async def system_test():
+async def test():
 
     bot = Bot(token=TOKEN)
 
     me = await bot.get_me()
 
-    total_posts = sum(
-        len(posts)
-        for posts in CONTENT.values()
+    template_count = sum(
+        len(items)
+        for items in POSTS.values()
     )
 
-    print()
-    print("=" * 62)
+    print("=" * 60)
     print(" MONEY MAKER — CONTENT ENGINE")
-    print("=" * 62)
+    print("=" * 60)
+
     print(f"Bot       : @{me.username}")
     print(f"Channel   : {CHANNEL}")
     print(f"Support   : @{SUPPORT}")
     print(f"Store     : {STORE_URL}")
-    print(f"Categories: {len(CONTENT)}")
-    print(f"Templates : {total_posts}")
-    print("=" * 62)
+
+    print(f"Categories: {len(POSTS)}")
+    print(f"Templates : {template_count}")
+    print(f"Products  : {product_count()}")
+
+    print("=" * 60)
     print("STATUS: READY")
-    print("=" * 62)
-    print()
+    print("=" * 60)
 
 
 # ============================================================
@@ -618,28 +481,49 @@ async def system_test():
 async def main():
 
     if len(sys.argv) < 2:
-        await system_test()
+        await test()
         return
 
     command = sys.argv[1].lower().strip()
 
     if command == "test":
-        await system_test()
+        await test()
+
+    elif command == "welcome":
+        await send_post("welcome")
+
+    elif command == "store":
+        await send_post("store")
+
+    elif command == "support":
+        await send_post("support")
+
+    elif command == "education":
+        await send_post("education")
+
+    elif command == "strategy":
+        await send_post("strategy")
+
+    elif command == "faq":
+        await send_post("faq")
+
+    elif command == "cta":
+        await send_post("cta")
+
+    elif command == "product":
+        await send_product()
 
     elif command == "random":
         await send_random()
 
-    elif command in CONTENT:
-        await send_post(command)
-
     else:
         print()
-        print(f"Unknown command: {command}")
+        print("UNKNOWN COMMAND")
         print()
         print(
-            "Available commands: "
-            "test | welcome | store | education | "
-            "strategy | faq | support | cta | random"
+            "Use: test | welcome | store | support | "
+            "education | strategy | faq | cta | "
+            "product | random"
         )
 
 
