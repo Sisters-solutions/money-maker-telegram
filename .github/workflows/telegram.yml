@@ -1,24 +1,24 @@
 name: Money Maker Telegram Automation
 
 on:
-  # Permite probar el sistema manualmente desde GitHub
   workflow_dispatch:
     inputs:
       category:
         description: "Post category"
         required: true
-        default: "store"
+        default: "product"
         type: choice
         options:
           - welcome
           - store
+          - product
           - education
+          - strategy
+          - faq
           - cta
           - support
           - random
 
-  # Horarios en America/New_York.
-  # GitHub Actions admite timezone en scheduled workflows.
   schedule:
     - cron: "0 9 * * *"
       timezone: "America/New_York"
@@ -38,6 +38,7 @@ on:
 
 jobs:
   telegram-post:
+
     runs-on: ubuntu-latest
 
     permissions:
@@ -50,6 +51,7 @@ jobs:
       STORE_URL: ${{ secrets.STORE_URL }}
 
     steps:
+
       - name: Download Money Maker code
         uses: actions/checkout@v4
 
@@ -67,43 +69,51 @@ jobs:
         id: category
         shell: bash
         run: |
-          # Manual execution
+
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+
             CATEGORY="${{ inputs.category }}"
 
-          # Scheduled execution
           else
-            HOUR="${{ github.event.schedule }}"
 
-            case "$HOUR" in
+            SCHEDULE="${{ github.event.schedule }}"
+
+            case "$SCHEDULE" in
+
               "0 9 * * *")
                 CATEGORY="education"
                 ;;
 
               "30 12 * * *")
-                CATEGORY="store"
+                CATEGORY="product"
                 ;;
 
               "30 15 * * *")
-                CATEGORY="random"
+                CATEGORY="strategy"
                 ;;
 
               "30 18 * * *")
-                CATEGORY="cta"
+                CATEGORY="random"
                 ;;
 
               "30 21 * * *")
-                CATEGORY="support"
+                CATEGORY="cta"
                 ;;
 
               *)
                 CATEGORY="random"
                 ;;
+
             esac
+
           fi
 
           echo "category=$CATEGORY" >> "$GITHUB_OUTPUT"
-          echo "Money Maker category: $CATEGORY"
+
+          echo "======================================"
+          echo " MONEY MAKER AUTOMATION"
+          echo " Category: $CATEGORY"
+          echo "======================================"
 
       - name: Publish to Telegram
         run: |
