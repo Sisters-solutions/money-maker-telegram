@@ -8,14 +8,12 @@ from dotenv import load_dotenv
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 
 from catalog import (
+    get_products,
     random_product,
     telegram_product_text,
     product_count,
+    approved_product_count,
 )
-
-# ============================================================
-# MONEY MAKER — TELEGRAM CONTENT ENGINE
-# ============================================================
 
 load_dotenv()
 
@@ -25,17 +23,11 @@ SUPPORT = os.getenv("SUPPORT_USERNAME")
 STORE_URL = os.getenv("STORE_URL")
 
 if not all([TOKEN, CHANNEL, SUPPORT, STORE_URL]):
-    raise RuntimeError("Missing variables in .env")
+    raise RuntimeError("Missing environment variables")
 
-
-# ============================================================
-# CONTENT LIBRARY
-# ============================================================
 
 POSTS = {
-
     "welcome": [
-
         """💸 MONEY MAKER WORLDWIDE
 
 Welcome to the official MONEY MAKER channel.
@@ -46,81 +38,29 @@ Welcome to the official MONEY MAKER channel.
 🌎 Online business resources
 🔔 Store updates
 
-Stay connected.
-
 👇 ENTER MONEY MAKER""",
-
-        """🌍 WELCOME TO MONEY MAKER
-
-One store.
-One channel.
-New opportunities and resources.
-
-Follow the channel for catalog updates, product spotlights and new releases.
-
-👇 EXPLORE MONEY MAKER""",
     ],
 
-
     "store": [
-
         """🟢 MONEY MAKER STORE
 
-The catalog is online.
+The current catalog is online.
 
-Browse the current selection directly through the official MONEY MAKER store.
+Explore the latest MONEY MAKER drops and digital resources.
 
 👇 OPEN THE STORE""",
 
-        """💰 EXPLORE MONEY MAKER
+        """⚡ MONEY MAKER ACCESS
 
-Browse the current MONEY MAKER catalog and discover what's available.
+Browse the current catalog directly through the official store.
+
+New drops and resources are available online.
 
 👇 VIEW CATALOG""",
-
-        """⚡ STORE ACCESS
-
-MONEY MAKER is available online.
-
-Explore the current catalog from anywhere.
-
-👇 ENTER THE STORE""",
     ],
-
-
-    "support": [
-
-        """💬 NEED HELP?
-
-Direct Telegram support is available.
-
-Questions about a product?
-Need more information?
-Not sure where to start?
-
-👇 CONTACT SUPPORT""",
-
-        """⚡ DIRECT SUPPORT
-
-Need information before making a decision?
-
-Contact MONEY MAKER directly through Telegram.
-
-👇 TALK TO SUPPORT""",
-
-        """💬 MONEY MAKER SUPPORT
-
-Questions about the catalog or how the store works?
-
-Speak directly with support.
-
-👇 OPEN SUPPORT""",
-    ],
-
 
     "education": [
-
-        """🧠 MONEY MAKER RULE #1
+        """🧠 MONEY MAKER RULE
 
 Information without execution produces nothing.
 
@@ -132,23 +72,7 @@ Improve.
 
 Then repeat.""",
 
-        """⚡ SPEED MATTERS
-
-Most people spend too much time searching and not enough time executing.
-
-Research → Decide → Execute → Measure.""",
-
-        """🌎 THINK GLOBAL
-
-The internet doesn't operate inside borders.
-
-Products can be digital.
-Customers can be global.
-Distribution can be instant.
-
-Build accordingly.""",
-
-        """🧠 EXECUTION > INFORMATION
+        """⚡ EXECUTION > INFORMATION
 
 Knowing something has little value until it becomes action.
 
@@ -157,33 +81,27 @@ Test.
 Measure.
 Improve.""",
 
-        """⚡ BUILD SYSTEMS
+        """🌎 THINK GLOBAL
+
+Digital products can reach a global audience.
+
+Distribution matters.
+Execution matters.
+Consistency matters.""",
+
+        """🧠 BUILD SYSTEMS
 
 Manual work has limits.
 
 Systems can operate repeatedly.
 
-The goal isn't simply to work harder.
-
 Build processes that keep working.""",
-
-        """🌍 ONLINE BUSINESS PRINCIPLE
-
-Distribution matters.
-
-A great product nobody sees produces nothing.
-
-Product + Distribution + Execution.""",
     ],
 
-
     "strategy": [
-
         """📈 MONEY MAKER STRATEGY
 
 Don't depend on one source of traffic.
-
-Build multiple distribution channels.
 
 Telegram.
 Short-form content.
@@ -209,19 +127,15 @@ Improve every stage.""",
 
         """⚡ AUTOMATION
 
-Every repetitive task should eventually become a system.
+Every repetitive legitimate task should eventually become a system.
 
 Content.
 Distribution.
 Analytics.
-Customer support.
-Operations.
-
-Automation creates leverage.""",
+Support.
+Operations.""",
 
         """📊 TEST EVERYTHING
-
-Don't guess what works.
 
 Publish.
 Measure.
@@ -229,22 +143,10 @@ Compare.
 Improve.
 
 Data beats assumptions.""",
-
-        """🌎 DISTRIBUTION
-
-The internet gives businesses access to a global audience.
-
-The challenge isn't access.
-
-The challenge is earning attention.""",
     ],
 
-
     "faq": [
-
-        """❓ MONEY MAKER FAQ
-
-WHERE IS THE STORE?
+        """❓ WHERE IS THE STORE?
 
 The official MONEY MAKER catalog is available through the button below.
 
@@ -252,9 +154,9 @@ The official MONEY MAKER catalog is available through the button below.
 
         """❓ NEED MORE INFORMATION?
 
-Each product has its own description inside MONEY MAKER.
+Product information is available directly through MONEY MAKER.
 
-For additional questions, direct Telegram support is available.
+For additional questions, contact Telegram support.
 
 👇 CONTACT SUPPORT""",
 
@@ -267,22 +169,32 @@ MONEY MAKER support will never need your:
 • Account password
 
 Keep authentication credentials private.""",
-
-        """❓ HOW DO I CONTACT MONEY MAKER?
-
-Direct support is available through Telegram.
-
-Use the button below.
-
-👇 CONTACT SUPPORT""",
     ],
 
+    "support": [
+        """💬 NEED HELP?
+
+Questions about a product?
+Need more information?
+Not sure where to start?
+
+Direct Telegram support is available.
+
+👇 CONTACT SUPPORT""",
+
+        """⚡ DIRECT SUPPORT
+
+Need information before making a decision?
+
+Contact MONEY MAKER directly through Telegram.
+
+👇 TALK TO SUPPORT""",
+    ],
 
     "cta": [
+        """👀 EXPLORE MONEY MAKER
 
-        """👀 STILL WATCHING?
-
-Explore the MONEY MAKER catalog whenever you're ready.
+Browse the current catalog whenever you're ready.
 
 👇 SEE WHAT'S AVAILABLE""",
 
@@ -299,24 +211,11 @@ Decide.
 Browse the current MONEY MAKER catalog.
 
 👇 ENTER""",
-
-        """🌎 MONEY MAKER
-
-The store is online.
-
-Explore the current catalog.
-
-👇 OPEN STORE""",
     ],
 }
 
 
-# ============================================================
-# BUTTONS
-# ============================================================
-
 def buttons(mode="both"):
-
     store = InlineKeyboardButton(
         "🛒 VISIT STORE",
         url=STORE_URL
@@ -325,11 +224,6 @@ def buttons(mode="both"):
     support = InlineKeyboardButton(
         "💬 CONTACT SUPPORT",
         url=f"https://t.me/{SUPPORT}"
-    )
-
-    channel = InlineKeyboardButton(
-        "📢 MONEY MAKER CHANNEL",
-        url="https://t.me/MoneyMakerWorldwide"
     )
 
     if mode == "store":
@@ -347,38 +241,52 @@ def buttons(mode="both"):
     return InlineKeyboardMarkup([
         [store],
         [support],
-        [channel],
     ])
 
 
-# ============================================================
-# SEND STANDARD POST
-# ============================================================
+def find_product(name):
+    for product in get_products():
+        if product["name"].upper() == name.upper():
+            return product
 
-async def send_post(category):
+    raise RuntimeError(
+        f"Product not found: {name}"
+    )
 
-    if category not in POSTS:
-        print(f"Unknown category: {category}")
-        return
 
+async def publish_text(text, mode="both"):
     bot = Bot(token=TOKEN)
-
-    text = random.choice(POSTS[category])
-
-    if category in ("store", "cta"):
-        keyboard = buttons("store")
-
-    elif category == "support":
-        keyboard = buttons("support")
-
-    else:
-        keyboard = buttons("both")
 
     sent = await bot.send_message(
         chat_id=CHANNEL,
         text=text,
-        reply_markup=keyboard,
+        reply_markup=buttons(mode),
         disable_web_page_preview=True,
+    )
+
+    return sent
+
+
+async def send_post(category):
+    if category not in POSTS:
+        raise RuntimeError(
+            f"Unknown category: {category}"
+        )
+
+    text = random.choice(POSTS[category])
+
+    if category in ("store", "cta"):
+        mode = "store"
+
+    elif category == "support":
+        mode = "support"
+
+    else:
+        mode = "both"
+
+    sent = await publish_text(
+        text,
+        mode
     )
 
     print(
@@ -389,23 +297,15 @@ async def send_post(category):
     )
 
 
-# ============================================================
-# PRODUCT SPOTLIGHT
-# ============================================================
-
-async def send_product():
-
-    product = random_product()
+async def send_product(product=None):
+    if product is None:
+        product = random_product()
 
     text = telegram_product_text(product)
 
-    bot = Bot(token=TOKEN)
-
-    sent = await bot.send_message(
-        chat_id=CHANNEL,
-        text=text,
-        reply_markup=buttons("store"),
-        disable_web_page_preview=True,
+    sent = await publish_text(
+        text,
+        "store"
     )
 
     print(
@@ -417,38 +317,67 @@ async def send_product():
     )
 
 
-# ============================================================
-# ROTATING CONTENT
-# ============================================================
+async def send_cashapp_daily():
+    """
+    Fixed daily product.
 
-async def send_random():
+    This command is called by GitHub Actions
+    once per day at 12:30 America/New_York.
+    """
 
-    categories = [
-        "education",
-        "strategy",
-        "faq",
-        "store",
-        "support",
-        "cta",
-        "product",
+    product = find_product(
+        "CASHAPP TRANSFER SAUCE"
+    )
+
+    await send_product(product)
+
+
+async def send_evening():
+    """
+    Evening commercial slot.
+
+    Uses the approved weighted catalog.
+    CASHAPP TRANSFER SAUCE is excluded here
+    because it already has its fixed daily slot.
+    """
+
+    products = [
+        p for p in get_products()
+        if p.get("auto_publish", False)
+        and p.get("weight", 0) > 0
+        and p["name"] != "CASHAPP TRANSFER SAUCE"
     ]
 
-    category = random.choice(categories)
+    if not products:
+        await send_post("store")
+        return
 
-    if category == "product":
-        await send_product()
-    else:
-        await send_post(category)
+    weights = [
+        p.get("weight", 1)
+        for p in products
+    ]
+
+    product = random.choices(
+        products,
+        weights=weights,
+        k=1
+    )[0]
+
+    await send_product(product)
 
 
-# ============================================================
-# SYSTEM TEST
-# ============================================================
+async def send_night():
+    category = random.choice([
+        "cta",
+        "support",
+        "faq",
+    ])
+
+    await send_post(category)
+
 
 async def test():
-
     bot = Bot(token=TOKEN)
-
     me = await bot.get_me()
 
     template_count = sum(
@@ -456,30 +385,43 @@ async def test():
         for items in POSTS.values()
     )
 
+    cashapp = find_product(
+        "CASHAPP TRANSFER SAUCE"
+    )
+
     print("=" * 60)
-    print(" MONEY MAKER — CONTENT ENGINE")
+    print(" MONEY MAKER — US CONTENT ENGINE")
     print("=" * 60)
 
-    print(f"Bot       : @{me.username}")
-    print(f"Channel   : {CHANNEL}")
-    print(f"Support   : @{SUPPORT}")
-    print(f"Store     : {STORE_URL}")
+    print(f"Bot              : @{me.username}")
+    print(f"Channel          : {CHANNEL}")
+    print(f"Support          : @{SUPPORT}")
+    print(f"Store            : {STORE_URL}")
+    print(f"Templates        : {template_count}")
+    print(f"Catalog products : {product_count()}")
+    print(f"Auto products    : {approved_product_count()}")
 
-    print(f"Categories: {len(POSTS)}")
-    print(f"Templates : {template_count}")
-    print(f"Products  : {product_count()}")
+    print()
+    print("DAILY CASHAPP")
+    print(
+        f"{cashapp['name']} | "
+        f"${cashapp['price']}"
+    )
+
+    print()
+    print("US SCHEDULE")
+    print("09:00 ET | EDUCATION")
+    print("12:30 ET | CASHAPP DAILY")
+    print("15:30 ET | STRATEGY")
+    print("18:30 ET | PRODUCT ROTATION")
+    print("21:30 ET | CTA / SUPPORT / FAQ")
 
     print("=" * 60)
     print("STATUS: READY")
     print("=" * 60)
 
 
-# ============================================================
-# COMMAND ROUTER
-# ============================================================
-
 async def main():
-
     if len(sys.argv) < 2:
         await test()
         return
@@ -495,9 +437,6 @@ async def main():
     elif command == "store":
         await send_post("store")
 
-    elif command == "support":
-        await send_post("support")
-
     elif command == "education":
         await send_post("education")
 
@@ -507,29 +446,35 @@ async def main():
     elif command == "faq":
         await send_post("faq")
 
+    elif command == "support":
+        await send_post("support")
+
     elif command == "cta":
         await send_post("cta")
 
     elif command == "product":
         await send_product()
 
-    elif command == "random":
-        await send_random()
+    elif command == "cashapp_daily":
+        await send_cashapp_daily()
+
+    elif command == "evening":
+        await send_evening()
+
+    elif command == "night":
+        await send_night()
 
     else:
         print()
         print("UNKNOWN COMMAND")
         print()
         print(
-            "Use: test | welcome | store | support | "
-            "education | strategy | faq | cta | "
-            "product | random"
+            "Use: test | welcome | store | "
+            "education | strategy | faq | support | "
+            "cta | product | cashapp_daily | "
+            "evening | night"
         )
 
-
-# ============================================================
-# START
-# ============================================================
 
 if __name__ == "__main__":
     asyncio.run(main())

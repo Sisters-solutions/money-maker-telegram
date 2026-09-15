@@ -1,6 +1,7 @@
 name: Money Maker Telegram Automation
 
 on:
+
   workflow_dispatch:
     inputs:
       category:
@@ -9,34 +10,45 @@ on:
         default: "product"
         type: choice
         options:
-          - welcome
-          - store
+          - cashapp_daily
           - product
+          - evening
           - education
           - strategy
+          - store
           - faq
-          - cta
           - support
-          - random
+          - cta
+          - night
+          - welcome
 
   schedule:
+
+    # 09:00 New York
     - cron: "0 9 * * *"
       timezone: "America/New_York"
 
+    # 12:30 New York
+    # CASHAPP TRANSFER SAUCE every day
     - cron: "30 12 * * *"
       timezone: "America/New_York"
 
+    # 15:30 New York
     - cron: "30 15 * * *"
       timezone: "America/New_York"
 
+    # 18:30 New York
+    # Second product slot
     - cron: "30 18 * * *"
       timezone: "America/New_York"
 
+    # 21:30 New York
     - cron: "30 21 * * *"
       timezone: "America/New_York"
 
 
 jobs:
+
   telegram-post:
 
     runs-on: ubuntu-latest
@@ -52,7 +64,7 @@ jobs:
 
     steps:
 
-      - name: Download Money Maker code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -65,14 +77,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Determine post category
-        id: category
+      - name: Determine publication
+        id: publication
         shell: bash
         run: |
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
 
-            CATEGORY="${{ inputs.category }}"
+            COMMAND="${{ inputs.category }}"
 
           else
 
@@ -81,40 +93,41 @@ jobs:
             case "$SCHEDULE" in
 
               "0 9 * * *")
-                CATEGORY="education"
+                COMMAND="education"
                 ;;
 
               "30 12 * * *")
-                CATEGORY="product"
+                COMMAND="cashapp_daily"
                 ;;
 
               "30 15 * * *")
-                CATEGORY="strategy"
+                COMMAND="strategy"
                 ;;
 
               "30 18 * * *")
-                CATEGORY="random"
+                COMMAND="evening"
                 ;;
 
               "30 21 * * *")
-                CATEGORY="cta"
+                COMMAND="night"
                 ;;
 
               *)
-                CATEGORY="random"
+                echo "Unknown schedule: $SCHEDULE"
+                exit 1
                 ;;
 
             esac
 
           fi
 
-          echo "category=$CATEGORY" >> "$GITHUB_OUTPUT"
+          echo "command=$COMMAND" >> "$GITHUB_OUTPUT"
 
-          echo "======================================"
-          echo " MONEY MAKER AUTOMATION"
-          echo " Category: $CATEGORY"
-          echo "======================================"
+          echo "========================================"
+          echo " MONEY MAKER"
+          echo " COMMAND: $COMMAND"
+          echo "========================================"
 
       - name: Publish to Telegram
         run: |
-          python bot.py "${{ steps.category.outputs.category }}"
+          python bot.py "${{ steps.publication.outputs.command }}"
