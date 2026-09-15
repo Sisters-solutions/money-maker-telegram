@@ -1,0 +1,110 @@
+name: Money Maker Telegram Automation
+
+on:
+  # Permite probar el sistema manualmente desde GitHub
+  workflow_dispatch:
+    inputs:
+      category:
+        description: "Post category"
+        required: true
+        default: "store"
+        type: choice
+        options:
+          - welcome
+          - store
+          - education
+          - cta
+          - support
+          - random
+
+  # Horarios en America/New_York.
+  # GitHub Actions admite timezone en scheduled workflows.
+  schedule:
+    - cron: "0 9 * * *"
+      timezone: "America/New_York"
+
+    - cron: "30 12 * * *"
+      timezone: "America/New_York"
+
+    - cron: "30 15 * * *"
+      timezone: "America/New_York"
+
+    - cron: "30 18 * * *"
+      timezone: "America/New_York"
+
+    - cron: "30 21 * * *"
+      timezone: "America/New_York"
+
+
+jobs:
+  telegram-post:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHANNEL: ${{ secrets.TELEGRAM_CHANNEL }}
+      SUPPORT_USERNAME: ${{ secrets.SUPPORT_USERNAME }}
+      STORE_URL: ${{ secrets.STORE_URL }}
+
+    steps:
+      - name: Download Money Maker code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Determine post category
+        id: category
+        shell: bash
+        run: |
+          # Manual execution
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            CATEGORY="${{ inputs.category }}"
+
+          # Scheduled execution
+          else
+            HOUR="${{ github.event.schedule }}"
+
+            case "$HOUR" in
+              "0 9 * * *")
+                CATEGORY="education"
+                ;;
+
+              "30 12 * * *")
+                CATEGORY="store"
+                ;;
+
+              "30 15 * * *")
+                CATEGORY="random"
+                ;;
+
+              "30 18 * * *")
+                CATEGORY="cta"
+                ;;
+
+              "30 21 * * *")
+                CATEGORY="support"
+                ;;
+
+              *)
+                CATEGORY="random"
+                ;;
+            esac
+          fi
+
+          echo "category=$CATEGORY" >> "$GITHUB_OUTPUT"
+          echo "Money Maker category: $CATEGORY"
+
+      - name: Publish to Telegram
+        run: |
+          python bot.py "${{ steps.category.outputs.category }}"
